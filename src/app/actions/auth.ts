@@ -7,6 +7,7 @@ import { randomInt } from "node:crypto";
 import { clearLocalSession, getCurrentUser, isBootstrapAdminEmail, setLocalSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { LANGUAGE_COOKIE } from "@/lib/language";
+import { resolvePostSignInPath, safeNextPath } from "@/lib/post-sign-in";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -15,11 +16,6 @@ function normalisePhone(raw: string) {
   const trimmed = raw.replace(/[\s()-]/g, "");
   if (!/^\+?\d{7,15}$/.test(trimmed)) return null;
   return trimmed.startsWith("+") ? trimmed : `+${trimmed}`;
-}
-
-function safeNext(next: unknown) {
-  if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//")) return "/dashboard";
-  return next;
 }
 
 export type AuthState = { error?: string; devCode?: string; phone?: string; step?: "code" };
@@ -53,7 +49,7 @@ export async function verifyPhoneOtpAction(
 
   const phone = normalisePhone(String(formData.get("phone") ?? ""));
   const code = String(formData.get("code") ?? "").trim();
-  const next = safeNext(formData.get("next"));
+  const next = safeNextPath(formData.get("next"));
   if (!phone) return { error: "That phone number does not look right." };
   if (!/^\d{6}$/.test(code)) return { error: "Enter the 6-digit code." };
 
@@ -63,8 +59,9 @@ export async function verifyPhoneOtpAction(
   const existing = await db.getUserByPhone(phone);
   const user = existing ?? (await db.createUser({ phone, role: "patient" }));
   await setLocalSession(user.id);
+  const destination = await resolvePostSignInPath(user, next);
   revalidatePath("/", "layout");
-  redirect(`/post-sign-in?next=${encodeURIComponent(next)}`);
+  redirect(destination);
 }
 
 /**
@@ -81,7 +78,7 @@ export async function localEmailSignInAction(
     .trim()
     .toLowerCase();
   const fullName = String(formData.get("full_name") ?? "").trim();
-  const next = safeNext(formData.get("next"));
+  const next = safeNextPath(formData.get("next"));
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: "Enter a valid email address." };
 
   const existing = await db.getUserByEmail(email);
@@ -94,8 +91,9 @@ export async function localEmailSignInAction(
     }));
 
   await setLocalSession(user.id);
+  const destination = await resolvePostSignInPath(user, next);
   revalidatePath("/", "layout");
-  redirect(`/post-sign-in?next=${encodeURIComponent(next)}`);
+  redirect(destination);
 }
 
 /** Local fallback only: sign in as one of the seeded demo accounts. */
@@ -137,7 +135,7 @@ export async function signOutAction() {
 export async function completeLanguageStepAction(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) redirect("/sign-in");
-  const next = safeNext(formData.get("next"));
+  const next = safeNextPath(formData.get("next"));
   const language = String(formData.get("language") ?? "en");
   const allowed = ["en", "ar", "fr", "bn"] as const;
   const resolved = (allowed as readonly string[]).includes(language)
@@ -151,8 +149,9 @@ export async function completeLanguageStepAction(formData: FormData) {
     maxAge: 60 * 60 * 24 * 365,
     sameSite: "lax",
   });
+  // Re-read the user so the routing decision sees language_chosen = true.
+  const updated = await db.getUser(user.id);
+  const destination = updated ? await resolvePostSignInPath(updated, next) : next;
   revalidatePath("/", "layout");
-  // Hand back to the single routing decision, which knows whether this patient
-  // still needs to complete intake.
-  redirect(`/post-sign-in?next=${encodeURIComponent(next)}`);
+  redirect(destination);
 }

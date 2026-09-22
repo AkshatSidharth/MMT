@@ -1,4 +1,4 @@
-# Sehat Bridge — medical tourism facilitator platform
+# Mediva — medical tourism facilitator platform
 
 A platform that connects international patients with accredited Indian hospitals.
 Patients submit their case, upload their records and track progress; an internal

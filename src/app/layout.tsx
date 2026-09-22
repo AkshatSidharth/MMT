@@ -14,13 +14,13 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Sehat Bridge — World-class treatment in India, arranged for you",
-    template: "%s · Sehat Bridge",
+    default: "Mediva — World-class treatment in India, arranged for you",
+    template: "%s · Mediva",
   },
   description:
     "We connect international patients with accredited Indian hospitals: share your case, get matched, consult a doctor and receive one clear quote. Indicative costs, confidential records, a named case manager.",
   openGraph: {
-    title: "Sehat Bridge — World-class treatment in India, arranged for you",
+    title: "Mediva — World-class treatment in India, arranged for you",
     description:
       "Share your medical case, get matched with accredited Indian hospitals and receive one clear quote, with a named case manager throughout.",
     type: "website",

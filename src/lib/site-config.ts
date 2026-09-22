@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Sehat Bridge",
+  name: "Mediva",
   tagline: "World-class treatment in India, arranged end to end",
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "911234567890",
   contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "care@example.com",
