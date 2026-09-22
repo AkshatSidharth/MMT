@@ -1,0 +1,15 @@
+-- Bootstrap reference supply data for a fresh Supabase project.
+--
+-- The rows below are illustrative composites, not real institutions, so the
+-- platform is reviewable before ops loads vetted, publicly sourced listings
+-- through Admin > Supply CMS. Every figure is an indicative band.
+--
+-- Generate the real INSERT statements from the checked-in reference data with:
+--   npm run seed:sql > supabase/seed.generated.sql
+-- then run it against your project. `npm run seed:sql` prints treatments,
+-- hospitals and doctors from src/lib/reference-data.ts, which is the single
+-- source of truth shared with the local development store.
+
+-- Bind the bootstrap admin allowlist used by handle_new_auth_user().
+-- Replace with your own ops addresses before first sign-in.
+-- alter database postgres set app.admin_emails = 'ops@yourdomain.com,lead@yourdomain.com';
