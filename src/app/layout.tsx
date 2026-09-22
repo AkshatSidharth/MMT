@@ -34,8 +34,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const option = languageOption(language);
 
   return (
-    <html lang={option.code} dir={option.dir} className={inter.variable}>
-      <body className="min-h-dvh bg-background font-sans">
+    /*
+     * Browser extensions (screen recorders, grammar checkers, password managers)
+     * routinely stamp attributes onto <html> and <body> before React hydrates,
+     * which React would otherwise report as a hydration mismatch. This suppresses
+     * the warning for these two elements' own attributes only — it does not reach
+     * their descendants, so a genuine mismatch inside the app is still reported.
+     */
+    <html
+      lang={option.code}
+      dir={option.dir}
+      className={inter.variable}
+      suppressHydrationWarning
+    >
+      <body className="min-h-dvh bg-background font-sans" suppressHydrationWarning>
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
